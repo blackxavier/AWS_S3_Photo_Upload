@@ -1,0 +1,58 @@
+# Use a lightweight Python image as the base
+FROM python:3.11.4-slim-buster as builder
+
+# Create and set the working directory
+WORKDIR /usr/src/app
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+# install system dependencies for the shell script
+RUN apt-get update && apt-get install -y netcat && \
+    apt-get install -y --no-install-recommends gcc
+
+# Install dependencies
+COPY requirements.txt $HOME
+RUN pip install --upgrade pip
+RUN pip install -r requirements.txt
+RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requirements.txt
+
+# pull official base image
+FROM python:3.11.4-slim-buster
+
+
+# Create and set the working directory
+WORKDIR /usr/src/app
+
+
+# create the app user
+RUN addgroup --system app && adduser --system --group app
+
+
+# create the appropriate directories
+ENV HOME=/usr/src/app
+RUN mkdir $HOME/staticfiles
+
+# install dependencies
+COPY --from=builder /bin/nc /bin/nc
+COPY --from=builder /usr/src/app/wheels /wheels
+COPY --from=builder /usr/src/app/requirements.txt .
+RUN pip install --upgrade pip
+RUN pip install --no-cache /wheels/*
+
+
+# Copy the Django app code
+COPY . .
+
+# copy entrypoint.sh
+RUN sed -i 's/\r$//g' $HOME/entrypoint/entrypoint.sh  
+RUN chmod +x $HOME/entrypoint/entrypoint.sh 
+RUN chown -R app:app $HOME
+
+
+# change to the app user
+USER app
+
+# Command to run your application
+ENTRYPOINT ["/usr/src/app/entrypoint/entrypoint.sh"]
