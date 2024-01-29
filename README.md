@@ -1,47 +1,57 @@
-# AWS S3 MEDIA FILES UPLOAD PROJECT
+# Project1 Dockerized App
 
-This project is designed to upload media files to Amazon Simple Storage Service. Django was used to build the application that seamlessly implements this feature. Note that Python must be installed on the host system
+This repository contains a Dockerized setup for a simple Django app (Project1) with Nginx, PostgreSQL, and other services using Docker Compose.
 
-## Getting Started
+## Services
 
-Follow these steps to get your development environment set up:
+### 1. Web (Django with Gunicorn)
 
-### 1. Clone the Repository
+- The `web` service is responsible for running the Django app using Gunicorn.
+- It exposes the app on port 8000.
+- It depends on the `db` service.
+- Configuration details are provided in `.env.web` file.
 
-```bash
-git clone https://github.com/blackxavier/AWS_S3_Photo_Upload.git
+### 2. Nginx
+
+- The `nginx` service serves as the reverse proxy and handles static files.
+- It depends on the `web` service.
+- Static files are stored in the `static_volume_2` volume.
+
+### 3. PostgreSQL (db)
+
+- The `db` service uses the PostgreSQL 12 image.
+- It stores data in the `project2-postgres_data_dev` volume.
+- Configuration details are provided in `.env.prod.pg-admin` file.
+
+### 4. PgAdmin
+
+- The `pgadmin` service runs a PgAdmin container for managing PostgreSQL.
+- It is accessible on port 5050.
+- Configuration details are provided in `.env.prod.pg-admin` file.
+
+### 5. Adminer
+
+- The `adminer` service runs an Adminer container for managing databases.
+- It is accessible on port 8080.
+
+## How to Use
+
+1. Clone the Repository:
+   ```bash
+   git clone https://github.com/blackxavier/AWS_S3_Photo_Upload.git
+   git checkout dev
+   cd AWS_S3_Photo_Upload
+   docker compose -f docker-compose.prod.yml up --build
+   ```
+2. Checkout branch:
+
+```
+bash
+   git checkout dev
+   cd AWS_S3_Photo_Upload
+
 ```
 
-### 2. Change Directory
+3. Setup AWS IAM Keys
 
-```
-cd AWS_S3_Photo_Upload
-```
-
-### 3. Install Dependencies
-
-```
-pip install -r requirements.txt
-```
-
-### 4. Add environment variables in the project root directory
-
-Create a file called .env and add AWS S3 required environment variables generated from AWS IAM console. See example below:
-
-```
-AWS_ACCESS_KEY_ID=AKIAuseyourown
-AWS_SECRET_ACCESS_KEY=Pfh+useyourownUbYEuv1SjHzt2Y+at
-AWS_STORAGE_BUCKET_NAME=project1-bucuseyourownket-123456
-AWS_S3_REGION_NAME=us-east-1
-AWS_S3_CUSTOM_DOMAIN=%s.s3.amazonaws.com" % AWS_STORAGE_BUCKET_NAME
-```
-
-### 5. Install Dependencies
-
-```
-python manage.py runserver
-```
-
-### 6. Test Application
-
-Access server at localhost:8000
+- Create access key and secret access key from your AWS account. Note that user associated with the access key should have permissions to access s3.
