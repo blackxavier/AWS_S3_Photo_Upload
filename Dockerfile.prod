@@ -14,8 +14,7 @@ RUN apt-get update && apt-get install -y netcat && \
 
 # Install dependencies
 COPY requirements.txt $HOME
-RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requirements.txt
 
 # pull official base image
@@ -46,8 +45,8 @@ RUN pip install --no-cache /wheels/*
 COPY . .
 
 # copy entrypoint.sh
-RUN sed -i 's/\r$//g' $HOME/entrypoint/entrypoint.sh  
-RUN chmod +x $HOME/entrypoint/entrypoint.sh 
+RUN sed -i 's/\r$//g' $HOME/entrypoint/entrypoint.prod.sh  
+RUN chmod +x $HOME/entrypoint/entrypoint.prod.sh 
 RUN chown -R app:app $HOME
 
 
@@ -55,4 +54,4 @@ RUN chown -R app:app $HOME
 USER app
 
 # Command to run your application
-ENTRYPOINT ["/usr/src/app/entrypoint/entrypoint.sh"]
+ENTRYPOINT ["/usr/src/app/entrypoint/entrypoint.prod.sh"]

@@ -6,14 +6,23 @@ services:
       context: .
       dockerfile: Dockerfile.prod
     command: gunicorn project1.wsgi:application --bind 0.0.0.0:8000
-    ports:
-      - "8000:8000"
+    expose:
+      - "8000"
     volumes:
       - .:/app:ro
     depends_on:
       - db
     env_file:
       - ./.env.web
+
+  nginx:
+    build: nginx/
+    volumes:
+      - static_volume_2:/home/app/web/staticfiles
+    ports:
+      - "80:80"
+    depends_on:
+      - web
 
   db:
     image: postgres:12
@@ -40,3 +49,4 @@ services:
 
 volumes:
   project2-postgres_data_dev:
+  static_volume_2:
